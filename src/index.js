@@ -112,6 +112,8 @@ SftpClient.prototype.get = function(path, useCompression, encoding, otherOptions
 
                 let stream = sftp.createReadStream(path, options);
 
+                let streamArray = []
+
                 stream.on('error', (err) => {
                     reject(err);
                 });
@@ -120,9 +122,16 @@ SftpClient.prototype.get = function(path, useCompression, encoding, otherOptions
                 stream.on('readable', () => {
                     let chunk;
                     while((chunk = stream.read()) !== null) {
-                        resolve(chunk)
+                        streamArray.push(chunk)
                     }
                 });
+
+                //
+                stream.on('end', () => {
+                    let buffer = Buffer.concat(streamArray)
+                    resolve(buffer)
+                })
+
             } catch(err) {
                 reject(err);
             }
